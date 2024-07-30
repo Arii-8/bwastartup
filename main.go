@@ -32,12 +32,13 @@ func main() {
 	api := router.Group("/api/v1")
 	api.POST("/users", userHandler.RegisterUser)
 	api.POST("/sessions", userHandler.Login)
+	api.POST("/email_checkers", userHandler.CheckEmailAvailability)
 
 	router.Run()
 
 	// userRepository.Save(user)
 
-	// Last Episode 5.4 Tutorial (BERHASIL DITEST DI POSTMAN)
+	// Last Episode 6.3 Tutorial (BERHASIL DITEST DI POSTMAN)
 
 	/*
 	 * CLUE BLUEPRINT

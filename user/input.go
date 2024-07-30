@@ -14,4 +14,9 @@ type LoginInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
+// check email input
+type CheckEmailInput struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
 /* Input struct yang berarti akan diolah oleh handler */

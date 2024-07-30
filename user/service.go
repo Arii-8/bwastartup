@@ -7,8 +7,9 @@ import (
 )
 
 type Service interface {
-	RegisterUser(input RegisterUserInput) (User, error) // Service untuk register input
-	Login(input LoginInput) (User, error)               // Service untuk login input
+	RegisterUser(input RegisterUserInput) (User, error)   // Service untuk register input
+	Login(input LoginInput) (User, error)                 // Service untuk login input
+	IsEmailAvailable(input CheckEmailInput) (bool, error) // Service untuk check 'is email available'
 }
 
 type service struct {
@@ -66,6 +67,21 @@ func (s *service) Login(input LoginInput) (User, error) {
 	}
 	// if return success
 	return user, nil
+}
+
+// Fungsi check 'is email available'
+func (s *service) IsEmailAvailable(input CheckEmailInput) (bool, error) {
+	email := input.Email
+	user, err := s.repository.FindByEmail(email)
+	if err != nil {
+		return false, err
+	}
+
+	if user.ID == 0 {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 // mapping struct input ke struct User
