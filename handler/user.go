@@ -17,6 +17,7 @@ func NewUserHandler(userService user.Service) *userHandler {
 	return &userHandler{userService}
 }
 
+// Fungsi untuk register user
 func (h *userHandler) RegisterUser(c *gin.Context) {
 	// tangkap input dari user
 	// map input dari user ke struct RegisterUserInput
@@ -48,5 +49,43 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 
 	// menggunakan response dari helper/helper.go
 	response := helper.APIResponse("Account has been registered", http.StatusOK, "success", formatter)
+	c.JSON(http.StatusOK, response)
+}
+
+// Fungsi Login endpoint
+func (h *userHandler) Login(c *gin.Context) {
+	// user memasukkan input (email & password)
+	// mapping dari input user ke input struct
+	// input struct passing service
+	// di service mencari dengan bantuan repository user dengan email x
+	// mencocokan password
+
+	// input ditangkap handler
+	var input user.LoginInput
+	err := c.ShouldBindJSON(&input)
+
+	// check error
+	if err != nil {
+		errors := helper.FormatValidationError(err) // memanggil format validation erro dengan mengirim kan parameter 'err'
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.APIResponse("Login failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	loggedinUser, err := h.userService.Login(input)
+	if err != nil {
+		errorMessage := gin.H{"errors": err.Error()}
+
+		response := helper.APIResponse("Login failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	formatter := user.FormatUser(loggedinUser, "tokentokentoken")
+
+	// menggunakan response dari helper/helper.go
+	response := helper.APIResponse("Successfuly loggedin", http.StatusOK, "success", formatter)
 	c.JSON(http.StatusOK, response)
 }

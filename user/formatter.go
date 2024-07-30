@@ -1,5 +1,6 @@
 package user
 
+// Fungsi & struct formatter user
 type UserFormatter struct {
 	ID         int    `json:"id"`
 	Name       string `json:"name"`

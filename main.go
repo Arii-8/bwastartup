@@ -23,18 +23,21 @@ func main() {
 	userRepository := user.NewRepository(db)
 	userService := user.NewService(userRepository)
 
+	// user handler
 	userHandler := handler.NewUserHandler(userService)
 
+	// Router
 	router := gin.Default()
 
 	api := router.Group("/api/v1")
 	api.POST("/users", userHandler.RegisterUser)
+	api.POST("/sessions", userHandler.Login)
 
 	router.Run()
 
 	// userRepository.Save(user)
 
-	// Last Episode 4.9 Tutorial (BERHASIL DITEST DI POSTMAN)
+	// Last Episode 5.4 Tutorial (BERHASIL DITEST DI POSTMAN)
 
 	/*
 	 * CLUE BLUEPRINT
