@@ -20,11 +20,9 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	userRepository := user.NewRepository(db)
-	userService := user.NewService(userRepository)
-
-	// user handler
-	userHandler := handler.NewUserHandler(userService)
+	userRepository := user.NewRepository(db)           // user repository
+	userService := user.NewService(userRepository)     // user service
+	userHandler := handler.NewUserHandler(userService) // user handler
 
 	// Router
 	router := gin.Default()
@@ -33,12 +31,13 @@ func main() {
 	api.POST("/users", userHandler.RegisterUser)
 	api.POST("/sessions", userHandler.Login)
 	api.POST("/email_checkers", userHandler.CheckEmailAvailability)
+	api.POST("/avatars", userHandler.UploadAvatar)
 
 	router.Run()
 
 	// userRepository.Save(user)
 
-	// Last Episode 6.3 Tutorial (BERHASIL DITEST DI POSTMAN)
+	// Last Episode 7.5 Tutorial (BERHASIL DITEST DI POSTMAN)
 
 	/*
 	 * CLUE BLUEPRINT
