@@ -2,6 +2,7 @@ package main
 
 // import library
 import (
+	"bwastartup/auth"
 	"bwastartup/handler"
 	"bwastartup/user"
 	"log"
@@ -20,9 +21,10 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	userRepository := user.NewRepository(db)           // user repository
-	userService := user.NewService(userRepository)     // user service
-	userHandler := handler.NewUserHandler(userService) // user handler
+	userRepository := user.NewRepository(db)                        // user repository
+	userService := user.NewService(userRepository)                  // user service
+	authService := auth.NewService()                                // user generate token 'auth service'
+	userHandler := handler.NewUserHandler(userService, authService) // user handler
 
 	// Router
 	router := gin.Default()
@@ -37,7 +39,7 @@ func main() {
 
 	// userRepository.Save(user)
 
-	// Last Episode 7.5 Tutorial (BERHASIL DITEST DI POSTMAN)
+	// Last Episode 8.5 Tutorial (BERHASIL DITEST DI POSTMAN)
 
 	/*
 	 * CLUE BLUEPRINT

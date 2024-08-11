@@ -2,6 +2,7 @@
 package handler
 
 import (
+	"bwastartup/auth"
 	"bwastartup/helper"
 	"bwastartup/user"
 	"fmt"
@@ -11,18 +12,16 @@ import (
 )
 
 type userHandler struct {
-	userService user.Service // panggil package 'user' dan panggil struct 'Service'
+	userService user.Service // panggil package 'user' dan panggil interface 'Service'
+	authService auth.Service // panggil package 'auth' dan panggil interface 'Service'
 }
 
-func NewUserHandler(userService user.Service) *userHandler {
-	return &userHandler{userService}
+func NewUserHandler(userService user.Service, authService auth.Service) *userHandler {
+	return &userHandler{userService, authService}
 }
 
 // Fungsi untuk register user
 func (h *userHandler) RegisterUser(c *gin.Context) {
-	// tangkap input dari user
-	// map input dari user ke struct RegisterUserInput
-	// struct di atas kita passing sebagai parameter service
 
 	var input user.RegisterUserInput
 
@@ -45,8 +44,14 @@ func (h *userHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	// user formatter
-	formatter := user.FormatUser(newUser, "tokentokentoken")
+	// Token & user formatter
+	token, err := h.authService.GenerateToken(newUser.ID) // memasukkan new user id/id user baru untuk digenerate token
+	if err != nil {
+		response := helper.APIResponse("Register account failed", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	formatter := user.FormatUser(newUser, token)
 
 	// menggunakan response dari helper/helper.go
 	response := helper.APIResponse("Account has been registered", http.StatusOK, "success", formatter)
@@ -81,8 +86,14 @@ func (h *userHandler) Login(c *gin.Context) {
 		return
 	}
 
-	// Memformat data user yang berhasil login, termasuk pembuatan token (dummy token dalam contoh ini)
-	formatter := user.FormatUser(loggedinUser, "tokentokentoken")
+	// Memformat data user yang berhasil login, termasuk pembuatan token
+	token, err := h.authService.GenerateToken(loggedinUser.ID) // memasukkan new user id/id user baru untuk digenerate token
+	if err != nil {
+		response := helper.APIResponse("Login failed", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	formatter := user.FormatUser(loggedinUser, token)
 
 	// Menggunakan helper untuk membuat respons sukses
 	response := helper.APIResponse("Successfully logged in", http.StatusOK, "success", formatter)
