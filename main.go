@@ -39,7 +39,7 @@ func main() {
 
 	// userRepository.Save(user)
 
-	// Last Episode 8.5 Tutorial (BERHASIL DITEST DI POSTMAN)
+	// Last Episode 8.8 Tutorial (BERHASIL DITEST DI POSTMAN)
 
 	/*
 	 * CLUE BLUEPRINT
