@@ -11,6 +11,7 @@ type Service interface {
 	Login(input LoginInput) (User, error)                 // Service untuk login input
 	IsEmailAvailable(input CheckEmailInput) (bool, error) // Service untuk check 'is email available'
 	SaveAvatar(ID int, fileLocation string) (User, error) // Service untuk 'Save Avatar'
+	GetUserByID(ID int) (User, error)                     // Service untuk mencari user dari db berdasarkan id
 }
 
 type service struct {
@@ -101,6 +102,22 @@ func (s *service) SaveAvatar(ID int, fileLocation string) (User, error) {
 		return updatedUser, err
 	}
 	return updatedUser, nil
+}
+
+// Fungsi 'GetUserByID'
+func (s *service) GetUserByID(ID int) (User, error) {
+	user, err := s.repository.FindByID(ID)
+	if err != nil {
+		return user, err
+	}
+
+	// jika user tidak ditemukan
+	if user.ID == 0 {
+		return user, errors.New("no user found on with that id")
+	}
+
+	// jika ditemukan/semua berjalan lancar
+	return user, nil
 }
 
 // mapping struct input ke struct User

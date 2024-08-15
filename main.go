@@ -4,9 +4,13 @@ package main
 import (
 	"bwastartup/auth"
 	"bwastartup/handler"
+	"bwastartup/helper"
 	"bwastartup/user"
 	"log"
+	"net/http"
+	"strings"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -33,13 +37,13 @@ func main() {
 	api.POST("/users", userHandler.RegisterUser)
 	api.POST("/sessions", userHandler.Login)
 	api.POST("/email_checkers", userHandler.CheckEmailAvailability)
-	api.POST("/avatars", userHandler.UploadAvatar)
+	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar)
 
 	router.Run()
 
 	// userRepository.Save(user)
 
-	// Last Episode 8.8 Tutorial (BERHASIL DITEST DI POSTMAN)
+	// Last Episode 9.7 Tutorial (BERHASIL DITEST DI POSTMAN)
 
 	/*
 	 * CLUE BLUEPRINT
@@ -57,6 +61,57 @@ func main() {
 	// service : melakukan mapping dari struct input ke struct User
 	// repository
 	// db
+
+	// Langkah-langkah middleware (BLUEPRINT)
+	// langkah 1: ambil nilai header 'Authorization: Bearer tokentokentoken'
+	// langkah 2: dari header Authorization, kita ambil nilai tokennya saja
+	// Langkah 3: kita ambil validasi token
+	// Langkah 4: Jika valid, ambil nilai user_id
+	// Langkah 5: ambil user dari db berdasarkan user_id lewat service (membuat fungsi service)
+	// Langkah 6: jika user ada, kita set context isinya user
+}
+
+// Fungsi middleware
+func authMiddleware(authService auth.Service, userService user.Service) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
+		if !strings.Contains(authHeader, "Bearer") {
+			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+			return
+		}
+
+		// Contoh hasil: Bearer token
+		tokenString := ""
+		arrayToken := strings.Split(authHeader, " ")
+		if len(arrayToken) == 2 {
+			tokenString = arrayToken[1]
+		}
+
+		token, err := authService.ValidateToken(tokenString)
+		if err != nil {
+			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+			return
+		}
+
+		claim, ok := token.Claims.(jwt.MapClaims)
+		if !ok || !token.Valid {
+			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+			return
+		}
+
+		// ambil user id
+		userID := int(claim["user_id"].(float64))
+		user, err := userService.GetUserByID(userID)
+		if err != nil {
+			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", nil)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
+			return
+		}
+		c.Set("currentUser", user)
+	}
 }
 
 // input
