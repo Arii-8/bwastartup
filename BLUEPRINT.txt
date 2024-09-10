@@ -1,0 +1,42 @@
+// userRepository.Save(user)
+
+// Last Episode 11.5 Tutorial (BERHASIL DITEST DI POSTMAN)
+
+/*
+ * CLUE BLUEPRINT
+ *
+ * input dari user
+ * handler, mpping input dari user -> struct User
+ * service : melakukan mapping dari struct ke struct User
+ * repository
+ * db
+ *
+ */
+
+// input dari user
+// handler, mapping input dari user -> struct input
+// service : melakukan mapping dari struct input ke struct User
+// repository
+// db
+
+// Langkah-langkah middleware (BLUEPRINT)
+// langkah 1: ambil nilai header 'Authorization: Bearer tokentokentoken'
+// langkah 2: dari header Authorization, kita ambil nilai tokennya saja
+// Langkah 3: kita ambil validasi token
+// Langkah 4: Jika valid, ambil nilai user_id
+// Langkah 5: ambil user dari db berdasarkan user_id lewat service (membuat fungsi service)
+// Langkah 6: jika user ada, kita set context isinya user
+
+// input
+// handler mapping input ke struct
+// service mapping ke struct User
+// repository save struct User ke db
+
+/*
+ * Langkah-langkah Campaign (BLUEPRINT)
+ * Tangkap parameter di handler
+ * Handler ke Service
+ * Service yang menentukan Repository mana yang di-call
+ * Repository: FindAll, FindByUserID
+ * DB
+ */

@@ -3,9 +3,11 @@ package main
 // import library
 import (
 	"bwastartup/auth"
+	"bwastartup/campaign"
 	"bwastartup/handler"
 	"bwastartup/helper"
 	"bwastartup/user"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -25,7 +27,21 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	userRepository := user.NewRepository(db)                        // user repository
+	userRepository := user.NewRepository(db)         // user repository
+	campaignRepository := campaign.NewRepository(db) // campaign repository
+	campaigns, err := campaignRepository.FindByUserID(1)
+	fmt.Println("debug")
+	fmt.Println("debug")
+	fmt.Println("debug")
+	fmt.Println(len(campaigns))
+	for _, campaign := range campaigns {
+		fmt.Println(campaign.Name)
+		if len(campaign.CampaignImages) > 0 {
+			fmt.Println("Jumlah gambar")
+			fmt.Println(len(campaign.CampaignImages))
+			fmt.Println(campaign.CampaignImages[0].FileName)
+		}
+	}
 	userService := user.NewService(userRepository)                  // user service
 	authService := auth.NewService()                                // user generate token 'auth service'
 	userHandler := handler.NewUserHandler(userService, authService) // user handler
@@ -40,35 +56,6 @@ func main() {
 	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar)
 
 	router.Run()
-
-	// userRepository.Save(user)
-
-	// Last Episode 10.2 Tutorial (BERHASIL DITEST DI POSTMAN)
-
-	/*
-	 * CLUE BLUEPRINT
-	 *
-	 * input dari user
-	 * handler, mpping input dari user -> struct User
-	 * service : melakukan mapping dari struct ke struct User
-	 * repository
-	 * db
-	 *
-	 */
-
-	// input dari user
-	// handler, mapping input dari user -> struct input
-	// service : melakukan mapping dari struct input ke struct User
-	// repository
-	// db
-
-	// Langkah-langkah middleware (BLUEPRINT)
-	// langkah 1: ambil nilai header 'Authorization: Bearer tokentokentoken'
-	// langkah 2: dari header Authorization, kita ambil nilai tokennya saja
-	// Langkah 3: kita ambil validasi token
-	// Langkah 4: Jika valid, ambil nilai user_id
-	// Langkah 5: ambil user dari db berdasarkan user_id lewat service (membuat fungsi service)
-	// Langkah 6: jika user ada, kita set context isinya user
 }
 
 // Fungsi middleware
@@ -113,8 +100,3 @@ func authMiddleware(authService auth.Service, userService user.Service) gin.Hand
 		c.Set("currentUser", user)
 	}
 }
-
-// input
-// handler mapping input ke struct
-// service mapping ke struct User
-// repository save struct User ke db
