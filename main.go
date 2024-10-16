@@ -29,21 +29,14 @@ func main() {
 
 	userRepository := user.NewRepository(db)         // user repository
 	campaignRepository := campaign.NewRepository(db) // campaign repository
-	campaigns, err := campaignRepository.FindByUserID(1)
-	fmt.Println("debug")
-	fmt.Println("debug")
-	fmt.Println("debug")
-	fmt.Println(len(campaigns))
-	for _, campaign := range campaigns {
-		fmt.Println(campaign.Name)
-		if len(campaign.CampaignImages) > 0 {
-			fmt.Println("Jumlah gambar")
-			fmt.Println(len(campaign.CampaignImages))
-			fmt.Println(campaign.CampaignImages[0].FileName)
-		}
-	}
-	userService := user.NewService(userRepository)                  // user service
-	authService := auth.NewService()                                // user generate token 'auth service'
+
+	userService := user.NewService(userRepository)             // user service
+	campaignService := campaign.NewService(campaignRepository) // new campaign repository yang di kirim ke service campaign
+	authService := auth.NewService()                           // user generate token 'auth service'
+
+	campaigns, _ := campaignService.FindCampaigns(8)
+	fmt.Println(len(campaigns)) // check panjang campagin alias isi data campaign dari database
+
 	userHandler := handler.NewUserHandler(userService, authService) // user handler
 
 	// Router
