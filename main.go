@@ -34,8 +34,8 @@ func main() {
 	campaignService := campaign.NewService(campaignRepository) // new campaign repository yang di kirim ke service campaign
 	authService := auth.NewService()                           // user generate token 'auth service'
 
-	campaigns, _ := campaignService.FindCampaigns(8)
-	fmt.Println(len(campaigns)) // check panjang campagin alias isi data campaign dari database
+	campaigns, _ := campaignService.FindCampaigns(8) // jika data yang ada databasenya hanya ada 3 dan diambil lebih dari 3 yaitu 8, maka return 0
+	fmt.Println(len(campaigns))                      // check/debug panjang campagin alias isi data campaign dari database
 
 	userHandler := handler.NewUserHandler(userService, authService) // user handler
 
