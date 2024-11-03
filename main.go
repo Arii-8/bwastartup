@@ -7,7 +7,6 @@ import (
 	"bwastartup/handler"
 	"bwastartup/helper"
 	"bwastartup/user"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -34,10 +33,8 @@ func main() {
 	campaignService := campaign.NewService(campaignRepository) // new campaign repository yang di kirim ke service campaign
 	authService := auth.NewService()                           // user generate token 'auth service'
 
-	campaigns, _ := campaignService.FindCampaigns(8) // jika data yang ada databasenya hanya ada 3 dan diambil lebih dari 3 yaitu 8, maka return 0
-	fmt.Println(len(campaigns))                      // check/debug panjang campagin alias isi data campaign dari database
-
 	userHandler := handler.NewUserHandler(userService, authService) // user handler
+	campaignHandler := handler.NewCampaignHandler(campaignService)  // campaign handler
 
 	// Router
 	router := gin.Default()
@@ -47,6 +44,8 @@ func main() {
 	api.POST("/sessions", userHandler.Login)
 	api.POST("/email_checkers", userHandler.CheckEmailAvailability)
 	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar)
+
+	api.GET("/campaigns", campaignHandler.GetCampaigns)
 
 	router.Run()
 }
