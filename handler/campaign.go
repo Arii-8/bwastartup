@@ -3,6 +3,7 @@ package handler
 import (
 	"bwastartup/campaign"
 	"bwastartup/helper"
+	"bwastartup/user"
 	"net/http"
 	"strconv"
 
@@ -60,5 +61,42 @@ func (h *campaignHandler) GetCampaign(c *gin.Context) {
 		return
 	}
 	response := helper.APIResponse("Campaign detail", http.StatusOK, "success", campaign.FormatCampaignDetail(campaignDetail))
+	c.JSON(http.StatusOK, response)
+}
+
+// create campaign
+func (h *campaignHandler) CreateCampaign(c *gin.Context) {
+	// analisis
+	// tangkap parameter dari user perlu mappimg ke input struct
+	// ambil current user dari jwt/handler
+	// panggil service, parameternya input struct yang sudah dimapping dari input user (dan juga buat slug)
+	// panggil respository, untuk simpan data campaign baru
+	var input campaign.CreateCampaignInput
+
+	err := c.ShouldBindJSON(&input)
+	// Memeriksa apakah terjadi error saat parsing input JSON
+	if err != nil {
+		// Memformat error validasi ke dalam bentuk yang mudah dipahami
+		errors := helper.FormatValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		// Membuat respons dengan pesan "failed to create campaign" dan detail error
+		response := helper.APIResponse("failed to create campaign", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	currentUser := c.MustGet("currentUser").(user.User)
+	input.User = currentUser
+
+	newCampaign, err := h.service.CreateCampaign(input)
+	// Memeriksa apakah terjadi error saat parsing input JSON
+	if err != nil {
+		// Membuat respons dengan pesan "failed to create campaign" dan detail error
+		response := helper.APIResponse("failed to create campaign", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	response := helper.APIResponse("success to create campaign", http.StatusOK, "success", campaign.FormatCampaign(newCampaign))
 	c.JSON(http.StatusOK, response)
 }
