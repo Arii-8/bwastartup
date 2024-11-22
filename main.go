@@ -38,14 +38,19 @@ func main() {
 
 	// Router
 	router := gin.Default()
+	router.Static("/images", "./images")
 
 	api := router.Group("/api/v1")
+
+	// user routing
 	api.POST("/users", userHandler.RegisterUser)
 	api.POST("/sessions", userHandler.Login)
 	api.POST("/email_checkers", userHandler.CheckEmailAvailability)
 	api.POST("/avatars", authMiddleware(authService, userService), userHandler.UploadAvatar)
 
+	// campaign routing
 	api.GET("/campaigns", campaignHandler.GetCampaigns)
+	api.GET("/campaigns/:id", campaignHandler.GetCampaign)
 
 	router.Run()
 }
