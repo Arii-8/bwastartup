@@ -34,7 +34,7 @@ func FormatCampaign(campaign Campaign) CampaignFormatter {
 	return campaignFormatter
 }
 
-// multi formatter =? formatter banyak data
+// multi formatter => formatter banyak data
 func FormatCampaigns(campaigns []Campaign) []CampaignFormatter {
 	campaignsFormatter := []CampaignFormatter{}
 

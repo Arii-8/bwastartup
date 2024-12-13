@@ -4,6 +4,7 @@ import (
 	"bwastartup/campaign"
 	"bwastartup/helper"
 	"bwastartup/user"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -103,6 +104,7 @@ func (h *campaignHandler) CreateCampaign(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// update campaign
 func (h *campaignHandler) UpdateCampaign(c *gin.Context) {
 	// user masukkan input
 	// handler
@@ -149,3 +151,74 @@ func (h *campaignHandler) UpdateCampaign(c *gin.Context) {
 	response := helper.APIResponse("success to update campaign", http.StatusOK, "success", campaign.FormatCampaign(updatedCampaign))
 	c.JSON(http.StatusOK, response)
 }
+
+// upload campaign image
+func (h *campaignHandler) UploadImage(c *gin.Context) {
+	var input campaign.CreateCampaignImageInput
+
+	err := c.ShouldBind(&input)
+	if err != nil {
+		response := helper.APIResponse("Failed to upload campaign image", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	currentUser := c.MustGet("currentUser").(user.User)
+	input.User = currentUser
+	userID := currentUser.ID
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.APIResponse("Failed to upload campaign image", http.StatusBadRequest, "error", data)
+
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	// id user tuh harusnya dapet dari jwt
+	// currentUser := c.MustGet("currentUser").(user.User)
+	// userID := currentUser.ID
+
+	// Simpan gambarnya di folder "images/" berdasarkan id di filename
+	path := fmt.Sprintf("images/%d-%s", userID, file.Filename)
+
+	err = c.SaveUploadedFile(file, path)
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.APIResponse("Failed to upload campaign image", http.StatusBadRequest, "error", data)
+
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	// Di service kita panggil repo
+	_, err = h.service.SaveCampaignImage(input, path)
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.APIResponse("Failed to upload campaign image", http.StatusBadRequest, "error", data)
+
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	// JWT (sementara hardcore, seakan akan user yang login ID = 1)
+	// Repo ambil data user yang ID = 1
+
+	// Repo update data user simpan lokasi file
+	data := gin.H{"is_uploaded": true}
+	response := helper.APIResponse("Campaign image successfuly uploaded", http.StatusOK, "success", data)
+
+	c.JSON(http.StatusOK, response)
+}
+
+// upload campaign image blueprint:
+// handler:
+// tangkap input dan ubah ke struct input
+// save image campaign ke suatu folder
+
+// service: (kondisi manggil point 2 di repo, panggil repo point 1 )
+// => Perlu check yang user masukkan itu dia sebagai is_primary atau gak? jika gak, kalau is_primary nya false maka tidak perlu diubah
+
+// repository:
+// 1. create image/save data image ke dalam table campaign_images
+// 2. ubah is_primary true ke false (ini kasus kalau kita melakukan upload data image jika is_primary yang sebelumnya true maka kita ubah menjadi false)
