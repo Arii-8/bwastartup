@@ -1,6 +1,6 @@
 // userRepository.Save(user)
 
-// Last Episode 14.6 Tutorial (BERHASIL DITEST DI POSTMAN) (SUDAH DI PUSH : git push origin master)
+// Last Episode 17.11 Tutorial (BERHASIL DITEST DI POSTMAN) (SUDAH DI PUSH : git push origin master)
 
 /*
  * CLUE BLUEPRINT
@@ -18,6 +18,14 @@
 // service : melakukan mapping dari struct input ke struct User
 // repository
 // db
+
+/* Alur Golang BWA Start-Up */
+// 1. repository.go -> Untuk akses ke database
+// 2. service.go -> untuk bisnis logic
+// 3. input.go -> jika dibutuhkan, akan berguna untuk menangkap input dari user
+// 4. entity.go -> untuk membuat struct yang mewakili atau yang merupakan representasi dari table yang ada di dalam database
+// 5. formatter.go -> untuk melakukan formatting (return json untuk client yang menggunakan api yang kita buat)
+// 6. folder(handler) => file.go -> ibaratkan sebuah controller pada framework lain seperti php laravel atau yang lainnya
 
 // Langkah-langkah middleware (BLUEPRINT)
 // langkah 1: ambil nilai header 'Authorization: Bearer tokentokentoken'
@@ -40,3 +48,48 @@
  * Repository: FindAll, FindByUserID
  * DB
  */
+
+
+> instlled package
+/* Core Libraries (Direct Use) */
+go get -u github.com/gin-gonic/gin
+go get -u github.com/go-sql-driver/mysql
+go get -u gorm.io/gorm
+go get -u gorm.io/driver/mysql
+go get -u github.com/dgrijalva/jwt-go
+
+/* Validation and Formatting */
+go get -u github.com/go-playground/validator/v10
+go get -u github.com/go-playground/locales
+go get -u github.com/go-playground/universal-translator
+go get -u github.com/gosimple/slug
+go get -u github.com/gosimple/unidecode
+
+/* Helper and Encoding */
+go get -u github.com/goccy/go-json
+go get -u github.com/json-iterator/go
+go get -u github.com/pelletier/go-toml/v2
+go get -u gopkg.in/yaml.v3
+go get -u github.com/gabriel-vasile/mimetype
+
+/* Cryptography and Security */
+go get -u golang.org/x/crypto
+go get -u filippo.io/edwards25519
+
+/* Middleware and Utilities */
+go get -u github.com/gin-contrib/sse
+go get -u github.com/jinzhu/now
+go get -u github.com/mattn/go-isatty
+go get -u github.com/modern-go/concurrent
+go get -u golang.org/x/sys
+go get -u golang.org/x/net
+
+/* Optional Libraries (Mungkin Tidak Langsung Digunakan) */
+go get -u github.com/cloudwego/base64x
+go get -u github.com/ugorji/go/codec
+go get -u github.com/twitchyliquid64/golang-asm
+go get -u google.golang.org/protobuf
+
+
+
+

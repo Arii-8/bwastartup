@@ -6,6 +6,7 @@ import (
 	"bwastartup/campaign"
 	"bwastartup/handler"
 	"bwastartup/helper"
+	"bwastartup/transaction"
 	"bwastartup/user"
 	"log"
 	"net/http"
@@ -26,15 +27,19 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	userRepository := user.NewRepository(db)         // user repository
-	campaignRepository := campaign.NewRepository(db) // campaign repository
+	// Implementasions
+	userRepository := user.NewRepository(db)               // user repository
+	campaignRepository := campaign.NewRepository(db)       // campaign repository
+	transactionRepository := transaction.NewRepository(db) // transaction repository
 
-	userService := user.NewService(userRepository)             // user service
-	campaignService := campaign.NewService(campaignRepository) // new campaign repository yang di kirim ke service campaign
-	authService := auth.NewService()                           // user generate token 'auth service'
+	userService := user.NewService(userRepository)                                          // user service
+	campaignService := campaign.NewService(campaignRepository)                              // new campaign repository yang di kirim ke service campaign
+	authService := auth.NewService()                                                        // user generate token 'auth service'
+	transactionService := transaction.NewService(transactionRepository, campaignRepository) // transaction service
 
-	userHandler := handler.NewUserHandler(userService, authService) // user handler
-	campaignHandler := handler.NewCampaignHandler(campaignService)  // campaign handler
+	userHandler := handler.NewUserHandler(userService, authService)         // user handler
+	campaignHandler := handler.NewCampaignHandler(campaignService)          // campaign handler
+	transactionHandler := handler.NewTransactionHandler(transactionService) // transaction handler
 
 	// Router
 	router := gin.Default()
@@ -54,6 +59,9 @@ func main() {
 	api.POST("/campaigns", authMiddleware(authService, userService), campaignHandler.CreateCampaign)
 	api.PUT("/campaigns/:id", authMiddleware(authService, userService), campaignHandler.UpdateCampaign)
 	api.POST("/campaign-images", authMiddleware(authService, userService), campaignHandler.UploadImage)
+
+	// transaction routing
+	api.GET("/campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransactions)
 
 	router.Run()
 }
