@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bwastartup/helper"
+	"bwastartup/payment"
 	"bwastartup/transaction"
 	"bwastartup/user"
 	"net/http"
@@ -16,12 +17,13 @@ import (
 // repository mencari data transaction suatu campaign
 
 type transactionHandler struct {
-	service transaction.Service
+	service        transaction.Service
+	paymentService payment.Service
 }
 
 // function NewTransactionHandler
-func NewTransactionHandler(service transaction.Service) *transactionHandler {
-	return &transactionHandler{service}
+func NewTransactionHandler(service transaction.Service, paymentService payment.Service) *transactionHandler {
+	return &transactionHandler{service, paymentService}
 }
 
 // function GetCampaignTransactions
@@ -97,6 +99,29 @@ func (h *transactionHandler) CreateTransaction(c *gin.Context) {
 	// response jika berhasil create transaction
 	response := helper.APIResponse("success to create transaction", http.StatusOK, "success", transaction.FormatTransaction(newTransaction))
 	c.JSON(http.StatusOK, response)
+}
+
+// function GetNotification
+func (h *transactionHandler) GetNotification(c *gin.Context) {
+	var input transaction.TransactionNotificationInput
+
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
+		// Membuat respons dengan pesan "failed to process notification" dan detail error
+		response := helper.APIResponse("failed to process notification", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	err = h.paymentService.ProcessPayment(input)
+	if err != nil {
+		// Membuat respons dengan pesan "failed to process notification" dan detail error
+		response := helper.APIResponse("failed to process notification", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	c.JSON(http.StatusOK, input)
 }
 
 // GetUserTransactions

@@ -1,6 +1,8 @@
 package payment
 
 import (
+	"bwastartup/campaign"
+	"bwastartup/transaction"
 	"bwastartup/user"
 	"strconv"
 
@@ -8,21 +10,27 @@ import (
 )
 
 type service struct {
+	transactionRepository transaction.Repository
+	campaignRepository    campaign.Repository
 }
 
 type Service interface {
 	GetPaymentURL(transaction Transaction, user user.User) (string, error)
+	ProcessPayment(input transaction.TransactionNotificationInput) error
 }
 
-func NewService() *service {
-	return &service{}
+func NewService(transactionRepository transaction.Repository, campaignRepository campaign.Repository) *service {
+	return &service{transactionRepository, campaignRepository}
 }
 
 // function GetPaymentURL Transaction midtrans
 func (s *service) GetPaymentURL(transaction Transaction, user user.User) (string, error) {
 	midclient := midtrans.NewClient()
-	midclient.ServerKey = "YOUR_SERVER_KEY"
-	midclient.ClientKey = "YOUR_CLIENT_KEY"
+	// midclient.ServerKey = "YOUR_SERVER_KEY"
+	// midclient.ClientKey = "YOUR_CLIENT_KEY"
+
+	midclient.ServerKey = "SB-Mid-server-aPttKF9E3Zac0GtMoQVrnUiW"
+	midclient.ClientKey = "SB-Mid-client-2ajgi3pSLaBoBhpu"
 	midclient.APIEnvType = midtrans.Sandbox
 
 	snapGateway := midtrans.SnapGateway{
@@ -35,6 +43,7 @@ func (s *service) GetPaymentURL(transaction Transaction, user user.User) (string
 			FName: user.Name,
 		},
 		TransactionDetails: midtrans.TransactionDetails{
+			// Penjelasan => strconv.Itoa() yaitu "Integer to ASCII" mengkonversi bilangan int menjadi string
 			OrderID:  strconv.Itoa(transaction.ID),
 			GrossAmt: int64(transaction.Amount),
 		},
@@ -45,4 +54,44 @@ func (s *service) GetPaymentURL(transaction Transaction, user user.User) (string
 		return "", err
 	}
 	return snapTokenResp.RedirectURL, nil
+}
+
+// function ProcessPayment
+func (s *service) ProcessPayment(input transaction.TransactionNotificationInput) error {
+	// Penjelasan => strconv.Atoi() yaitu "ASCII to Integer" mengkonversi string menjadi int
+	transaction_id, _ := strconv.Atoi(input.OrderID)
+
+	transaction, err := s.transactionRepository.GetByID(transaction_id)
+	if err != nil {
+		return err
+	}
+
+	if input.PaymentType == "credit_card" && input.TransactionStatus == "capture" && input.FraudStatus == "accept" {
+		transaction.Status = "paid"
+	} else if input.TransactionStatus == "settlement" {
+		transaction.Status = "paid"
+	} else if input.TransactionStatus == "deny" || input.TransactionStatus == "expire" || input.TransactionStatus == "cancel" {
+		transaction.Status = "cancelled"
+	}
+
+	updatedTransaction, err := s.transactionRepository.Update(transaction)
+	if err != nil {
+		return err
+	}
+
+	campaign, err := s.campaignRepository.FindByID(updatedTransaction.CampaignID)
+	if err != nil {
+		return nil
+	}
+
+	if updatedTransaction.Status == "paid" {
+		campaign.BackerCount = campaign.BackerCount + 1
+		campaign.CurrentAmount = campaign.CurrentAmount + updatedTransaction.Amount
+
+		_, err := s.campaignRepository.Update(campaign)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
