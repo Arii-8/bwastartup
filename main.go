@@ -6,6 +6,7 @@ import (
 	"bwastartup/campaign"
 	"bwastartup/handler"
 	"bwastartup/helper"
+	"bwastartup/payment"
 	"bwastartup/transaction"
 	"bwastartup/user"
 	"log"
@@ -32,10 +33,11 @@ func main() {
 	campaignRepository := campaign.NewRepository(db)       // campaign repository
 	transactionRepository := transaction.NewRepository(db) // transaction repository
 
-	userService := user.NewService(userRepository)                                          // user service
-	campaignService := campaign.NewService(campaignRepository)                              // new campaign repository yang di kirim ke service campaign
-	authService := auth.NewService()                                                        // user generate token 'auth service'
-	transactionService := transaction.NewService(transactionRepository, campaignRepository) // transaction service
+	userService := user.NewService(userRepository)                                                          // user service
+	campaignService := campaign.NewService(campaignRepository)                                              // new campaign repository yang di kirim ke service campaign
+	authService := auth.NewService()                                                                        // user generate token 'auth service'
+	paymentService := payment.NewService()                                                                  // payment service
+	transactionService := transaction.NewService(transactionRepository, campaignRepository, paymentService) // transaction service
 
 	userHandler := handler.NewUserHandler(userService, authService)         // user handler
 	campaignHandler := handler.NewCampaignHandler(campaignService)          // campaign handler
@@ -63,6 +65,7 @@ func main() {
 	// transaction routing
 	api.GET("/campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransactions)
 	api.GET("/transactions", authMiddleware(authService, userService), transactionHandler.GetUserTransactions)
+	api.POST("/transactions", authMiddleware(authService, userService), transactionHandler.CreateTransaction)
 
 	router.Run()
 }
