@@ -1,6 +1,8 @@
 package transaction
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 // repository.go -> Untuk akses ke database
 type repository struct {

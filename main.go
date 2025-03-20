@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -36,15 +37,16 @@ func main() {
 	userService := user.NewService(userRepository)                                                          // user service
 	campaignService := campaign.NewService(campaignRepository)                                              // new campaign repository yang di kirim ke service campaign
 	authService := auth.NewService()                                                                        // user generate token 'auth service'
-	paymentService := payment.NewService(transactionRepository, campaignRepository)                         // payment service
+	paymentService := payment.NewService()                                                                  // payment service
 	transactionService := transaction.NewService(transactionRepository, campaignRepository, paymentService) // transaction service
 
-	userHandler := handler.NewUserHandler(userService, authService)                         // user handler
-	campaignHandler := handler.NewCampaignHandler(campaignService)                          // campaign handler
-	transactionHandler := handler.NewTransactionHandler(transactionService, paymentService) // transaction handler
+	userHandler := handler.NewUserHandler(userService, authService)         // user handler
+	campaignHandler := handler.NewCampaignHandler(campaignService)          // campaign handler
+	transactionHandler := handler.NewTransactionHandler(transactionService) // transaction handler
 
 	// Router
 	router := gin.Default()
+	router.Use(cors.Default())
 	router.Static("/images", "./images")
 
 	api := router.Group("/api/v1")
@@ -62,7 +64,7 @@ func main() {
 	api.PUT("/campaigns/:id", authMiddleware(authService, userService), campaignHandler.UpdateCampaign)
 	api.POST("/campaign-images", authMiddleware(authService, userService), campaignHandler.UploadImage)
 
-	// transaction routing
+	// transaction
 	api.GET("/campaigns/:id/transactions", authMiddleware(authService, userService), transactionHandler.GetCampaignTransactions)
 	api.GET("/transactions", authMiddleware(authService, userService), transactionHandler.GetUserTransactions)
 	api.POST("/transactions", authMiddleware(authService, userService), transactionHandler.CreateTransaction)
